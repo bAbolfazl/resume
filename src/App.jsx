@@ -23,6 +23,10 @@ function App() {
       path: "/add",
       element: <AddForm appData={appData} setAppData={setAppData} />,
     },
+    {
+      path: "/edit/:id",
+      element: <AddForm appData={appData} setAppData={setAppData} isEdit />,
+    },
   ]);
 
   return <RouterProvider router={router} />;

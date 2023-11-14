@@ -1,24 +1,51 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import Multiselect from "multiselect-react-dropdown";
 
 import skillSets from "../../configs/skillsSet";
 
-const AddForm = ({ appData, setAppData }) => {
-  const [form, setForm] = useState({
+import { v4 as uuidv4 } from "uuid";
+
+const AddForm = ({ appData, setAppData, isEdit }) => {
+  let params = useParams();
+
+  let initialFormState = {
     name: "",
     family: "",
     birth: "",
 
     skills: [],
-  });
+  };
+
+  if (isEdit) {
+    const currentItem = appData.find((item) => item?.id === params?.id);
+
+    initialFormState = {
+      name: currentItem?.name,
+      family: currentItem?.family,
+      birth: currentItem?.birth,
+
+      skills: currentItem?.skills,
+    };
+  }
+
+  const [form, setForm] = useState(initialFormState);
 
   const navigate = useNavigate();
 
   const onSubmit = (e) => {
     e.preventDefault();
-    const newData = [...appData, form];
+
+    let newData;
+    if (!isEdit) {
+      newData = [...appData, { id: uuidv4(), ...form }];
+    } else {
+      const dataWithDeletedItem = appData.filter(
+        (data) => data?.id !== params.id
+      );
+      newData = [...dataWithDeletedItem, { id: params.id, ...form }];
+    }
 
     setAppData(newData);
     localStorage.setItem("appData", JSON.stringify(newData));
@@ -81,6 +108,7 @@ const AddForm = ({ appData, setAppData }) => {
               selectedValues={form.skills}
               onSelect={(e) => setForm((prev) => ({ ...prev, skills: e }))}
               displayValue="name"
+              className="mx-auto w-[300px]"
             />
           </div>
           <div className="flex justify-center mt-8">
@@ -89,7 +117,7 @@ const AddForm = ({ appData, setAppData }) => {
               onClick={onSubmit}
               className="bg-green-600 rounded-lg px-3 py-2 text-white transition-colors hover:text-black mx-auto"
             >
-              Register
+              {isEdit ? "Edit" : "Register"}
             </button>
           </div>
         </div>
